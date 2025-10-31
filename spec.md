@@ -71,6 +71,37 @@ ARI Capable Hierarchy
 
 由于RCiEP没有连接上游，ARI不适用，可以把RC中First VF Offset和VF Stride允许的任何Function Number分配给VF（见9.3.3.8节和9.3.3.9节）。
 
+9.5 SR-IOV Interrupts
+
+支持SR-IOV的设备使用与6.1节中定义相同的中断信号机制。
+
+9.5.1 Interrupt机制
+
+传递中断的三种方式：
+
+·INTx
+
+·MSI
+
+·MSI-X
+
+PF可以实现INTx。VF不得实现INTx。PF和VF如果需要中断资源，应该实现MSI或/和MSI-X。每个PF和VF都必须实现其各自的中断capability。
+
+9.5.1.1 MSI Interrupts
+
+除非表9-40另有规定，MSI capability、PF和VF功能在7.7节中定义。
+
+Table 9-40 MSI Capability: Message Control
+
+9.5.1.2 MSI-X Interrupts
+
+MSI-X capability在7.7节中定义，并在图9-24中描述。
+
+Figure 9-24 MSI-X Capability
+
+PF和VF的功能与7.7.2节中定义的Function的功能相同。
+
+注意，VF的Table Offset和PBA Offset是相对于VF的内存地址空间而言的。
 
 9.5.1.3 Address Range Isolation
 
