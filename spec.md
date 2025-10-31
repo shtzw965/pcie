@@ -1,5 +1,5 @@
 
-# 9. Single Root I/O Virtualization and Sharing
+# 9 Single Root I/O Virtualization and Sharing
 ## 9.1 SR-IOV Architectural Overview
 工业界花费了巨大代价通过使用虚拟化技术提高硬件使用率（如应用执行）。Single Root I/O Virtualization and Sharing (SR-IOV) 让多个System Images（SI）共享PCI硬件资源。
 
@@ -91,7 +91,7 @@ PF需要第5章描述的Power Management Capability 。
 ### 9.6.1 VF Device Power Management States
 如果VF没有实现Power Management Capability，则VF的行为如同被编程为所属PF相同的电源状态。
 
-如果VF实现了Power Management Capability，除非9.6.4节另有规定，功能在7.5节中定义。
+如果VF实现了Power Management Capability，除非[9.6.4](#9.6.4)节另有规定，功能在7.5节中定义。
 
 如果VF实现了Power Management Capability，PF的电源状态低于VF时，设备行为未定义。软件应该先将VF置于更低电源状态，再降低它们所属PF的电源状态，以避免这种情况。
 
@@ -134,7 +134,7 @@ VF电源状态不影响链路电源状态。
 
 链路电源状态完全由PF中的设置控制，与VF的D-state无关。
 
-### 9.6.4 VF Power Management Capability
+### 9.6.4 VF Power Management Capability {#9.6.4}
 以下表格列出了PF和VF中Power Management Capability的要求。
 
 除非表9-41和表9-42中另有规定，PF和VF的功能在7.5节中定义。
