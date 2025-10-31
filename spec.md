@@ -48,6 +48,7 @@ SR-IOV提供了减少这些平台资源开销的工具。SR-IOV的好处有：
 
 
 9.3.2 Configuration Space
+
 支持SR-IOV的PF应该按照接下来的章节实现SR-IOV Extended Capability。VF应该按照接下来的章节实现配置空间字段和能力。
 
 9.3.3 SR-IOV Extended Capability
