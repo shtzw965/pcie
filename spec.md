@@ -1,6 +1,6 @@
 
-# 9 Single Root I/O Virtualization and Sharing
-## 9.1 SR-IOV Architectural Overview
+# <a id='9'>9 Single Root I/O Virtualization and Sharing</a>
+## <a id='9.1'>9.1 SR-IOV Architectural Overview</a>
 工业界花费了巨大代价通过使用虚拟化技术提高硬件使用率（如应用执行）。Single Root I/O Virtualization and Sharing (SR-IOV) 让多个System Images（SI）共享PCI硬件资源。
 
 为了展示这项技术如何被用来提高资源使用效率，参考图9-1所示的通用平台配置。
@@ -17,9 +17,9 @@
   - PCIe设备 - 多IO设备类型（例如网络存储等）
   - System Image - 像操作系统的软件，用于执行程序或可信服务（例如共享或非共享IO设备驱动）
 
-为了无需改变硬件提高硬件资源使用效率，可以执行多SI。如图9-2所示，在硬件和SI之间插入了称为Virtualization Intermediary (VI) 的软件。
+为了无需改变硬件提高硬件资源使用效率，可以执行多SI。如[图9-2](#Fig-9-2)所示，在硬件和SI之间插入了称为Virtualization Intermediary (VI) 的软件。
 
-图9-2 Generic Platform Configuration with a VI and Multiple SI
+<a id='Fig-9-2'>图9-2 Generic Platform Configuration with a VI and Multiple SI</a>
 
 VI完全拥有底层硬件的所有权。VI使用超出本规范范围的多种方法对硬件进行抽象，为每个SI提供其自身的虚拟系统。每个SI可用的实际硬件资源随负载或客户策略变化。虽然这种方法在许多环境工作良好，但IO密集负载面临严重性能下降。VI必须拦截并处理每个IO操作，包括进和出，这回显著增加平台资源开销。
 
