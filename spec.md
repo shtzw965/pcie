@@ -32,6 +32,14 @@ SR-IOV提供了减少这些平台资源开销的工具。SR-IOV的好处有：
 
 [图9-3](#pic-9-3)展示了一个有SR-IOV能力的平台示例。
 
+SR-IOV通用平台配置由以下额外功能元件组成：
+
+- SR-PCIM - 负责配置SR-IOV capability、管理PF和VF，以及处理相关错误事件和整体设备控制（例如电源管理和热插拔服务）的软件。
+- 可选的Translation Agent（TA） - TA是负责把PCIe trans中地址转化为平台物理地址的硬件或软硬件。TA可能包含Address Translation Cache（ATC）以加速访问转换表。TA可能同时支持Address Translation Serviecs（ATS），ATS使得PCIe Function可以获得对相关存储进行DMA访问的先验地址转换。ATS的益处和操作详见[第10章](#10)。
+- 可选的Address Translation and Protection Table（ATPT）- ATPT包含一系列TA处理PCIe请求（DMA读，DMA写，或中断请求）需要访问的地址映射。详见[第10章](#10)。
+  - PCIe中把中断当作内存写操作。根据requester id和PCIe trans中的地址，可以将中断路由到任何目标（例如，处理器内核），而这对于相关IO Function是透明的。
+  - DMA读写请求根据Routing ID和PCIe trans中的地址进行转换。
+- 可选的Address Translation Cache（ATC） - 一个ATC在平台中可以存在于两个位置，在RC集成的或其上的TA中，或在PCIe设备中。RC中，ATC能够加速翻译查找。
 
 ### <a id='9.3.2'>9.3.2 Configuration Space</a>
 支持SR-IOV的PF应该按照接下来的章节实现SR-IOV Extended Capability。VF应该按照接下来的章节实现配置空间字段和能力。
