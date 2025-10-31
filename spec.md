@@ -59,7 +59,7 @@ SR-IOV提供了减少这些平台资源开销的工具。SR-IOV的好处有：
 
 该位只出现在设备编号最小的PF（如PF0）中，并且影响设备所有的PF。设备其他PF中的该位只读为0。
 
-设备可能根据该位的设置决定Fisrt VF Offset（见9.3.3.9节）和VF Stride（见9.3.3.10节）的值。在任何PF的VF Eanble置位时改变该位的后果未定义。常规复位后该位必须设为默认值。任何PF和VF的FLR不影响该位的值。如果ARI Capable Hierarchy Preserved（见9.3.3.2.2节）或No_Soft_Reset（见9.6.2节）置位，所属PF从D3hot到D0的电源状态改变不影响该位的值（见9.6.2节）。
+设备可能根据该位的设置决定Fisrt VF Offset（见9.3.3.9节）和VF Stride（见9.3.3.10节）的值。在任何PF的VF Eanble置位时改变该位的后果未定义。常规复位后该位必须设为默认值。任何PF和VF的FLR不影响该位的值。如果ARI Capable Hierarchy Preserved（见9.3.3.2.2节）或No_Soft_Reset（见9.6.2节）置位，所属PF从D3Hot到D0的电源状态改变不影响该位的值（见9.6.2节）。
 
 该位对RCiEP不适用。
 
@@ -70,3 +70,93 @@ ARI Capable Hierarchy
 连接了上游的设备无法判断是否启用了ARI。如果启用了ARI，设备能够把所捕获的Bus Number中大于7的Function Number分配给VF以节省Bus Number。6.13节定义了ARI。
 
 由于RCiEP没有连接上游，ARI不适用，可以把RC中First VF Offset和VF Stride允许的任何Function Number分配给VF（见9.3.3.8节和9.3.3.9节）。
+
+
+9.5.1.3 Address Range Isolation
+
+如果映射MSI-X Talbe或MSI-X PBA地址空间的BAR也映射了其他与MSI-X结构无关的可用地址空间，则其他地址空间中使用的位置（如用于CSR）不得与任何MSI-X结构所在的自然对齐的System Page Size地址范围共享任何地址。MSI-X Table和MSI-X PBA可以共存于自然对齐的System Page Size地址范围内，但它们之间不得重叠。
+
+9.6 SR-IOV Power Management
+
+本节定义了PCIe SR-IOV电源管理能力和协议。
+
+PF需要第5章描述的Power Management Capability 。
+
+对VF，Power Management Capability是可选的。
+
+9.6.1 VF Device Power Management States
+
+如果VF没有实现Power Management Capability，则VF的行为如同被编程为所属PF相同的电源状态。
+
+如果VF实现了Power Management Capability，除非9.6.4节另有规定，功能在7.5节中定义。
+
+如果VF实现了Power Management Capability，PF的电源状态低于VF时，设备行为未定义。软件应该先将VF置于更低电源状态，再降低它们所属PF的电源状态，以避免这种情况。
+
+当VF完成内部初始化，且VF的Bus Master Enable（见9.3.4.1.3节）或SR-IOV Capability的VF MSE位（见9.3.3.3节）置位时，处于D0状态的VF即处于D0active。VF的内部初始化必须在满足以下任一条件时完成：
+
+·VF已经成功响应一个cfg请求（返回CRS除外）。
+
+·向VF发出FLR之后，符合以下条件之一：
+
+  ·FLR发出后已经过去1.0s。
+
+  ·VF支持FRS，并且发出FLR后，收到一条Reason Code为FLR Completed的FRS消息。
+
+  ·FLR发出后至少过去FLR Time。FLR Time是VF相关Readiness Time Reporting capability的FLR Time值或由系统软件或固件决定的值。
+
+·在设置一个PF的VF Enable后，符合以下条件之一：
+
+  ·VF Enable置位后至少1.0s。
+
+  ·PF支持FRS，且在VF Enable置位后，收到一条Reason Code为VF Enabled的FRS消息。
+
+·在VF从D3Hot到D0转换后，符合以下条件之一：
+
+  ·进入D0的请求发出过后10ms。
+
+  ·VF支持FRS，并且发出进入D0的请求后，收到一条Reason Code为D3Hot to D0 Transition Completed的FRS消息。
+
+  ·发出进入D0的请求后，至少过去D3Hot to D0 Time的时间。D3Hot to D0 Time的时间为VF相关Readiness Time Reporting capability中的D3Hot to D0 Time或由系统软件/固件决定的值。
+
+9.6.2 PF Device Power Management States
+
+PF的电源管理状态（D-state）对其关联的VF具有全局影响。如果VF未实现Power Management Capability，则其行为如同处于其关联的PF相同的电源状态。
+
+如果VF实现了Power Management Capability，PF的电源状态低于VF时，设备行为未定义。软件应该先将VF置于更低电源状态，再降低它们所属PF的电源状态，以避免这种情况。
+
+当PF置于D3Hot时：
+
+·如果No_Soft_Reset位为0，PF在D3Hot到D0转换时执行内部复位，其所有配置状态恢复为默认值。
+
+注意：重置PF会重置VF Enable，这意味着VF不再存在，并且在D3Hot到D0转换完成后，所有VF的特定上下文都会丢失。
+
+·如果No_Soft_Reset位置位，内部复位不会发生。SR-IOV extended capability保持状态切相关的VF仍然启用。
+
+当PF进入D3Cold状态时，VF不再存在，所有VF的特定上下文都会丢失，PME事件只能由PF发起。
+
+实现提示
+
+No_Soft_Reset Strongly Recommended
+
+强烈建议所有多Function设备置位No_Soft_Reset。此建议适用于PF。
+
+9.6.3 Link Power Management State
+
+VF电源状态不影响链路电源状态。
+
+链路电源状态完全由PF中的设置控制，与VF的D-state无关。
+
+9.6.4 VF Power Management Capability
+
+以下表格列出了PF和VF中Power Management Capability的要求。
+
+除非表9-41和表9-42中另有规定，PF和VF的功能在7.5节中定义。
+
+Table 9-41 SR-IOV Power Management Control/Status (PMCSR)
+
+Table 9-42 SR-IOV Power Management Data Register
+
+9.6.5 VF EmergencyPower Reduction State
+
+如果VF中的Emergency Power Reduction Supported字段非零，该VF将与关联的PF同时进入和退出紧急功率降低状态。软件可以使用PF中的Power Reduction Detected位模拟VF中的相应位。
+
