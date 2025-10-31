@@ -91,7 +91,7 @@ PF需要[第5章](#5)描述的Power Management Capability 。
 ### <a id='9.6.1'>9.6.1 VF Device Power Management States</a>
 如果VF没有实现Power Management Capability，则VF的行为如同被编程为所属PF相同的电源状态。
 
-如果VF实现了Power Management Capability，除非[9.6.4](#9.6.4)节另有规定，功能在7.5节中定义。
+如果VF实现了Power Management Capability，除非[9.6.4](#9.6.4)节另有规定，功能在[7.5节](#7.5)中定义。
 
 如果VF实现了Power Management Capability，PF的电源状态低于VF时，设备行为未定义。软件应该先将VF置于更低电源状态，再降低它们所属PF的电源状态，以避免这种情况。
 
