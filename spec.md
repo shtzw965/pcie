@@ -134,7 +134,7 @@ VF电源状态不影响链路电源状态。
 
 链路电源状态完全由PF中的设置控制，与VF的D-state无关。
 
-### 9.6.4 VF Power Management Capability {#9.6.4}
+### <a id='9.6.4'>9.6.4 VF Power Management Capability</a>
 以下表格列出了PF和VF中Power Management Capability的要求。
 
 除非表9-41和表9-42中另有规定，PF和VF的功能在7.5节中定义。
