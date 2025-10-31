@@ -45,3 +45,26 @@ SR-IOV提供了减少这些平台资源开销的工具。SR-IOV的好处有：
 ·能够把SR-IOV与其他IO虚拟化技术（如ATS、ATPT和中断重映射）集成，从而创建强大完整的IO虚拟化解决方案。
 
 图9-3展示了一个有SR-IOV能力的平台示例。
+
+
+
+
+
+
+9.3.3.3.5 ARI Capable Hierarchy
+
+对于连接了上游的设备，该位表示设备正上方的RP或DS是否启用了ARI。软件应该将该位设置于设备正上方的RP或DS的ARI Forwarding Enable匹配。
+
+该位只出现在设备编号最小的PF（如PF0）中，并且影响设备所有的PF。设备其他PF中的该位只读为0。
+
+设备可能根据该位的设置决定Fisrt VF Offset（见9.3.3.9节）和VF Stride（见9.3.3.10节）的值。在任何PF的VF Eanble置位时改变该位的后果未定义。常规复位后该位必须设为默认值。任何PF和VF的FLR不影响该位的值。如果ARI Capable Hierarchy Preserved（见9.3.3.2.2节）或No_Soft_Reset（见9.6.2节）置位，所属PF从D3hot到D0的电源状态改变不影响该位的值（见9.6.2节）。
+
+该位对RCiEP不适用。
+
+实现提示
+
+ARI Capable Hierarchy
+
+连接了上游的设备无法判断是否启用了ARI。如果启用了ARI，设备能够把所捕获的Bus Number中大于7的Function Number分配给VF以节省Bus Number。6.13节定义了ARI。
+
+由于RCiEP没有连接上游，ARI不适用，可以把RC中First VF Offset和VF Stride允许的任何Function Number分配给VF（见9.3.3.8节和9.3.3.9节）。
