@@ -39,7 +39,87 @@ SR-IOV通用平台配置由以下额外功能元件组成：
 - 可选的Address Translation and Protection Table（ATPT）- ATPT包含一系列TA处理PCIe请求（DMA读，DMA写，或中断请求）需要访问的地址映射。详见[第10章](#10)。
   - PCIe中把中断当作内存写操作。根据requester id和PCIe trans中的地址，可以将中断路由到任何目标（例如，处理器内核），而这对于相关IO Function是透明的。
   - DMA读写请求根据Routing ID和PCIe trans中的地址进行转换。
-- 可选的Address Translation Cache（ATC） - 一个ATC在平台中可以存在于两个位置，在RC集成的或其上的TA中，或在PCIe设备中。RC中，ATC能够加速翻译查找。
+- 可选的Address Translation Cache（ATC） - 一个ATC在平台中可以存在于两个位置，在RC集成的或其上的TA中，或在PCIe设备中。RC中，ATC能够加速翻译查找。设备中用ATS实现ATC。地址已经翻译的PCIe trans可以绕开平台的ATC以提高性能却没有影响ATPT技术带来的好处。详见[第10章](#10)ATS。
+- 可选的Access Control Services（ACS） - ACS在PCIe中定义了一系列点决定一笔TLP是否应该正常被路由，阻止或重定向。支持SR-IOV的系统中ACS可以用于防止分配给VI或不同SI的Function彼此之间或与peer设备通信。重定向可以允许TA决定端对端转发之前翻译上游memory TLP地址。可选的ACS P2P Egress Control可提供选择性阻塞。ACS 需与ATS交互。详见[9.3.7.6节](#9.3.7.6)。
+- Physical Function（PF） - PF是支持SR-IOV Extended Capability并且SR-PCIM，VI或SI可访问的PCIe Function。
+- Virtual Function（VF） - VF是SI直接可访问的轻量级PCIe Function。
+  - 至少，Function的主数据传输相关的资源可供SI访问。配置资源应仅限可信软件组件访问，例如VI或SR-PCIM。
+  - VF可被不同的SI串行共享（即，VF可分配给一个SI，重置后分配给另一个SI）。
+  - VF可选从一个PF迁移到另一个PF。迁移过程本身不在本规范中，但通过本规范中定义的配置控制来实现。
+- 同一PF关联的所有VF必须具有和PF相同的device type（例如，同为网络设备或同为存储设备）。
+
+为了比较PCIe设备和支持PCIe SR-IOV的设备，请查看以下图示。[图9-4](#pic-9-4)展示了一个兼容PCIe的设备示例。
+
+*<a id='pic-9-4'>图9-4 Example Multi-Function Device</a>*
+
+该图展示了一个具有以下特征的multi-Funtion PCIe设备示例：
+
+- PCIe设备共享一条通用PCIe Link。所有Function共享的这个Link和PCIe功能均通过Function 0进行管理。
+  - 虽然图中仅实现了三个Function，PCIe设备可以通过使用ARI capability支持最多256个Function。
+  - 所有Function均通过PCI枚举过程使用捕获的单个总线编号。
+- 在这个例子中，每个PCIe设备支持ATS capability并且都有一个关联的ATC管理ATS获得的翻译地址。
+- 每个PCIe Function都有包括独立配置空间和BAR的一系列物理资源。
+- 每个PCIe Function都可以被分配给SI。为了防止一个SI受其他SI影响，VI必须拦截并处理所有PCIe配置操作。
+
+正如图中所展示，硬件资源随配置的Function数量而扩展。根据设备的复杂性和规模，每个功能的增量成本有所不同。为了降低硬件增量成本，可以使用SR-IOV构建设备，像[图9-5](#pic-9-5)所示支持单个PF和多个VF。
+
+*<a id='pic-9-5'>图9-5 Example SR-IOV Single PF Capable Device</a>*
+
+[图9-5](#pic-9-5)展示了一个PF多VF的案例。需要注意的关键点：
+
+- PF兼容PCIe。
+  - 最初常规复位后，支持本规范中定义的SR-IOV capability的PCIe Function应禁用SR-IOV capability。
+  - 为了识别PF支持的page size和相关VF，需要读Supported Page Sizes配置字段。关于如何用该字段在系统页面边界上对齐PF或VF的内存口径，参见[9.2.1.1.1节](#9.2.1.1.1)。
+- PF命名法 **PF M**表示Function编号为**M**的PF。
+- VF命名法 **VF M,N**表示PF M相关的第N个VF。VF编号从1开始，因此PF M相关的第一个VF是VF M,1。
+- 每个VF和PF共享多个常规配置空间。（例如那些通过单个PF控制所有VF的字段，共享这些字段可以减少实现VF所需的硬件资源。）
+  - VF使用和PF相同的配置机制和header type。
+  - 给定PF相关的所有VF共享一份VF BAR集（见[9.3.3.14节](#9.3.3.14)），共享在SR-IOV Extended capability中的用于控制VF Memory空间访问同一个VF MSE位（见[9.3.3.3.4节](#9.3.3.3.4)）。
+  - InitialVFs和TotalVFs字段用于识别一个PF可以关联的VF最大数量。
+  - 如果设备不支持VF迁移，InitialVFs和TotalVFs应该包含相同的值。如果设备支持VF迁移，当读到TotalVFs时，PF必须返回可以分配到该PF的VF数量。对这样一个设备，读到InitialVFs时，PF必须返回分配给该PF的初始VF个数。
+- 每个Function，PF和VF分配到一个独特的Routing ID。每个PF的Routing ID按照[2.2.4.2节](#2.2.4.2)构建。每个VF的Routing ID由关联的PF和该PF的SR-IOV Extended capability中的字段决定。
+- 每次PCIe和SR-IOV配置访问假定通过像VI或SR-PCIM的可信软件组件。
+- 每个VF包含一系列提供Function特定服务需要的不共享硬件资源（例如，工作队列、数据缓冲区等资源等）。这些资源可以被SI直接访问而不需要VI或SR-PCIM拦截。
+- 每个SI可以分配一个或多个VF。分配策略不在本规范内。
+- 虽然此示例展示了PF内的一个ATC，但ATC的存在与否是可选的。此外，本规范并不排除在设备中每个VF支持一个ATC的实现方案。
+- 内部路由特定于实现。
+- 虽然PF操作存在许多潜在的使用模型，但常见的使用模型是使用PF严格在VI的控制下引导设备或平台。一旦SR-IOV Extended capability配置为允许把VF分配给各自SI，PF更多扮演管理角色。例如，PF可以被用于管理设备特定功能，例如分配给每个VF的内部资源，PCIe Link或Function特定Link（例如网络或存储Link）共享资源的仲裁。这些策略管理和资源分配策略不在本范围规定。
+
+[图9-6](#pic-9-6)展示了另一个使用案例模型。这个案例中，设备支持多个PF有各自一系列VF。
+
+需要注意的关键点：
+
+- 每个PF可以分配零个或多个VF。设备中每个PF的VF不需要相同。
+- ARI Extended capability允许Function分配到Function Groups并且定义如何配置Function Group仲裁。PF和VF可以分配到Function Groups并且获得相关仲裁能力的优点。每个Function Froup中仲裁任特定于实现。
+- PF和VF之间的内部路由特定于实现。
+- 某些使用模型中所有PF可能设备类型相同（例如所有PF提供相同的网络设备或相同的存储设备）。另一些模型，每个PF可能时不同的设备类型（例如，[图9-6](#pic-9-6)中一个PF时网络设备而另一个时加密设备）。
+  - 在设备类型之间存在依赖关系的使用模型中，例如，对于每个网络设备类型的VF，每个SI也需要一个加密设备类型的VF。SR-IOV Extended capability提供了一种指示这些依赖关系的方法。构建这些依赖关系以及将依赖的系列VF分配到给定SI的策略不在本规范范围内。
+
+正如前面的例子所见，PF和VF的数量可以分级使用模型需要变化。为了支持多种选择，SR-IOV设备可以支持以下数量和组合的PF和VF：
+
+- 使用ARI capability，设备最多支持256个PF。Function编号分配特定于实并且可以在256的Function编号空间中稀疏分布。
+- PF只能与设备捕获的Bus编号相关联，如[图9-7](#pic-9-7)所示。
+- SR-IOV设备可以消耗多个Bus编号 - VF可以与任何该设备内的Bus编号范围内的Bus编号相关联。捕获的Bus编号加上软件配置的任何其他Bus编号。详见[9.2.1.2节](#9.2.1.2)。
+  - 使用多个Bus编号使得设备支持非常大量的VF - 最多支持Routing ID空间的大小减去用于识别中间Bus的位。
+  - 如果软件没有识别有效的额外Bus编号，那么在额外Bus编号上实现的VF可能不可见。
+
+> ## *实现须知*
+> **Function Co-location**
+> 
+> ARI Extended capability使得设备最多支持与捕获Bus编号关联的最多256个Function（Function，PF，或VF的任意组合）。如果使用模型不需要超过256个Function，强烈建议将所有Function、PF和VF都放在捕获的总线编号内，而无需额外的Bus编号来访问VF。
+
+*<a id='pic-9-7'>图9-7 Example SR-IOV Device with Multiple Bus Numbers</a>*
+
+如[图9-8](#pic-9-8)，在最后一个示例中，设备实现可以混合任意数量的Function、PF和VF。
+
+*<a id='pic-9-8'>图9-8 Example SR-IOV Device with a Mixture of Function Types</a>*
+
+需要注意的关键点：
+
+- 每个设备必须实现Function 0。Function 0可以是PF（即它可以实现SR-IOV Extended capability）。
+- 任何Function组合都可以与捕获的Bus编号关联。
+  - 非VF只能与捕获的Bus编号相关联。
+- 如果支持ARI Extended capability，可以把Function分配到Function Group。分配策略不在本规范内。如果不支持ARI Extended capability，Function仍然可以使用[6.3.3.4节](#6.3.3.4)中定义的Function仲裁功能。
 
 ### <a id='9.3.2'>9.3.2 Configuration Space</a>
 支持SR-IOV的PF应该按照接下来的章节实现SR-IOV Extended Capability。VF应该按照接下来的章节实现配置空间字段和能力。
