@@ -131,11 +131,10 @@ PF的电源管理状态（D-state）对其关联的VF具有全局影响。如果
 
 当PF进入D3Cold状态时，VF不再存在，所有VF的特定上下文都会丢失，PME事件只能由PF发起。
 
-实现提示
-
-No_Soft_Reset Strongly Recommended
-
-强烈建议所有多Function设备置位No_Soft_Reset。此建议适用于PF。
+> ## 实现须知
+> **No_Soft_Reset Strongly Recommended**
+> 
+> 强烈建议所有Multi-Function设备所有Function置位No_Soft_Reset。此建议适用于PF。
 
 ### <a id='9.6.3'>9.6.3 Link Power Management State</a>
 VF电源状态不影响链路电源状态。
