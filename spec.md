@@ -5,7 +5,7 @@
 
 为了展示这项技术如何被用来提高资源使用效率，参考[图9-1](#pic-9-1)所示的通用平台配置。
 
-<a id='pic-9-1'>图9-1 通用平台配置</a>
+*<a id='pic-9-1'>图9-1 通用平台配置</a>*
 
 通用平台配置由一下组件组成：
 - PCIe RC，包含：
@@ -19,7 +19,7 @@
 
 为了无需改变硬件提高硬件资源使用效率，可以执行多SI。如[图9-2](#pic-9-2)所示，在硬件和SI之间插入了称为Virtualization Intermediary (VI) 的软件。
 
-<a id='pic-9-2'>图9-2 Generic Platform Configuration with a VI and Multiple SI</a>
+*<a id='pic-9-2'>图9-2 Generic Platform Configuration with a VI and Multiple SI</a>*
 
 VI完全拥有底层硬件的所有权。VI使用超出本规范范围的多种方法对硬件进行抽象，为每个SI提供其自身的虚拟系统。每个SI可用的实际硬件资源随负载或客户策略变化。虽然这种方法在许多环境工作良好，但IO密集负载面临严重性能下降。VI必须拦截并处理每个IO操作，包括进和出，这回显著增加平台资源开销。
 
@@ -53,11 +53,10 @@ SR-IOV通用平台配置由以下额外功能元件组成：
 
 该位对RCiEP不适用。
 
-实现提示
-
-ARI Capable Hierarchy
-
-连接了上游的设备无法判断是否启用了ARI。如果启用了ARI，设备能够把所捕获的Bus Number中大于7的Function Number分配给VF以节省Bus Number。[6.13节](#6.13)定义了ARI。
+> ## 实现须知
+> **ARI Capable Hierarchy**
+> 
+> 连接了上游的设备无法判断是否启用了ARI。如果启用了ARI，设备能够把所捕获的Bus Number中大于7的Function Number分配给VF以节省Bus Number。[6.13节](#6.13)定义了ARI。
 
 由于RCiEP没有连接上游，ARI不适用，可以把RC中First VF Offset和VF Stride允许的任何Function Number分配给VF（见[9.3.3.8节](#9.3.3.8)和[9.3.3.9节](#9.3.3.9)）。
 
@@ -75,12 +74,12 @@ PF可以实现INTx。VF不得实现INTx。PF和VF如果需要中断资源，应�
 #### <a id='9.5.1.1'>9.5.1.1 MSI Interrupts</a>
 除非[表9-40](#tab-9-40)另有规定，MSI capability、PF和VF功能在[7.7节](#7.7)中定义。
 
-<a id='tab-9-40'>表9-40 MSI Capability: Message Control</a>
+*<a id='tab-9-40'>表9-40 MSI Capability: Message Control</a>*
 
 #### <a id='9.5.1.2'>9.5.1.2 MSI-X Interrupts</a>
 MSI-X capability在[7.7节](#7.7)中定义，并在[图9-24](#pic-9-24)中描述。
 
-<a id='pic-9-24'>图9-24 MSI-X Capability</a>
+*<a id='pic-9-24'>图9-24 MSI-X Capability</a>*
 
 PF和VF的功能与[7.7.2节](#7.7.2)中定义的Function的功能相同。
 
@@ -146,14 +145,14 @@ VF电源状态不影响链路电源状态。
 
 除非[表9-41](#tab-9-41)和[表9-42](#tab-9-42)中另有规定，PF和VF的功能在[7.5节](#7.5)中定义。
 
-<a id='tab-9-41'>表9-41 SR-IOV Power Management Control/Status (PMCSR)</a>
+*<a id='tab-9-41'>表9-41 SR-IOV Power Management Control/Status (PMCSR)</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attribtutes |
 | -- | -- | -- | -- |
 | 14:13 | Data_Scale | Base | 00b |
 | 12:9 | Data_Select | Base | 0000b |
 | 3 | **No_Soft_Reset** - 如果VF实现了Power Management capability，VF的本字段必须和相关PF的值相同 | Base | Base |
 
-<a id='tab-9-42'>表9-42 SR-IOV Power Management Data Register</a>
+*<a id='tab-9-42'>表9-42 SR-IOV Power Management Data Register</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attribtutes |
 | -- | -- | -- | -- |
 | 7:0 | Data | Base | 00000000b |
