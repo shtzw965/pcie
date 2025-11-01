@@ -53,7 +53,7 @@ SR-IOV通用平台配置由以下额外功能元件组成：
 
 该位对RCiEP不适用。
 
-> ## 实现须知
+> ## *实现须知*
 > **ARI Capable Hierarchy**
 > 
 > 连接了上游的设备无法判断是否启用了ARI。如果启用了ARI，设备能够把所捕获的Bus Number中大于7的Function Number分配给VF以节省Bus Number。[6.13节](#6.13)定义了ARI。
@@ -130,7 +130,7 @@ PF的电源管理状态（D-state）对其关联的VF具有全局影响。如果
 
 当PF进入D3Cold状态时，VF不再存在，所有VF的特定上下文都会丢失，PME事件只能由PF发起。
 
-> ## 实现须知
+> ## *实现须知*
 > **No_Soft_Reset Strongly Recommended**
 > 
 > 强烈建议所有Multi-Function设备所有Function置位No_Soft_Reset。此建议适用于PF。
