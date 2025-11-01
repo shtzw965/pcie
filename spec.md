@@ -148,8 +148,16 @@ VF电源状态不影响链路电源状态。
 除非[表9-41](#tab-9-41)和[表9-42](#tab-9-42)中另有规定，PF和VF的功能在[7.5节](#7.5)中定义。
 
 <a id='tab-9-41'>表9-41 SR-IOV Power Management Control/Status (PMCSR)</a>
+| Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attribtutes |
+| -- | -- | -- | -- |
+| 14:13 | Data_Scale | Base | 00b |
+| 12:9 | Data_Select | Base | 0000b |
+| 3 | **No_Soft_Reset** - 如果VF实现了Power Management capability，VF的本字段必须和相关PF的值相同 | Base | Base |
 
 <a id='tab-9-42'>表9-42 SR-IOV Power Management Data Register</a>
+| Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attribtutes |
+| -- | -- | -- | -- |
+| 7:0 | Data | Base | 00000000b |
 
 ### <a id='9.6.5'>9.6.5 VF EmergencyPower Reduction State</a>
 如果VF中的Emergency Power Reduction Supported字段非零，该VF将与关联的PF同时进入和退出紧急功率降低状态。软件可以使用PF中的Power Reduction Detected位模拟VF中的相应位。
