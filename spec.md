@@ -345,6 +345,7 @@ PF的Header Log寄存器独立于其关联的VF，并且必须实现专用存储
 当VF的First Error Pointer有效时，VF的Header Log条目将被锁定并保持有效。按照[6.2节](#6.2)定义，当Uncorrectable Error Status寄存器相应位置位时，First Error Pointer有效。当Header Log锁定时，其他错误不得覆盖此VF或任何其他VF的已锁定条目。当一个header条目解锁后，共享header log的任何VF应可以记录一个新的错误。
 
 除非[表9-39](#tab-9-39)另有说明，[7.8.4.8节](#7.8.4.8)定义了PF和VF功能。
+
 *<a id='tab-9-39'>表9-39 Header Log寄存器变动</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
 | -- | -- | -- | -- |
