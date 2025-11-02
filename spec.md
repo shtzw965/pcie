@@ -227,6 +227,43 @@ PF的Header Log寄存器独立于其相关的VF，并且必须使用专用存储
 
 这些寄存器包含PCIe Extended Capability ID，Capability Version，和Next Capability Offset。这些字段在[7.8.4.1节](#7.8.4.1)描述，没有改变。
 
+### <a id='9.4.2.4'>9.4.2.4 Uncorrectable Error Status寄存器变化 (Offset 04h)</a>
+
+Uncorrectable Error Status寄存器表示单个错误的错误检测状态。非Function特定错误记录在PF中。只有Function特定错误记录在VF中。
+
+除非[表9-33](#tab-9-33)另有说明，[7.8.4.2节](#7.8.4.2)定义了PF和VF功能。
+
+*<a id='tab-9-33'>表9-33 Uncorrectable Error Status寄存器变化</a>*
+| Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
+| -- | -- | -- | -- |
+| 4 | Data Link Protocol Error Status | Base | 0b |
+| 5 | Surprise Down Error Status | Base | 0b |
+| 13 | Flow Control Protocol Error Status | Base | 0b |
+| 17 | Received Overflow Status | Base | 0b |
+| 18 | Malformed TLP Status | Base | 0b |
+| 19 | ECRC Error Status | Base | 0b |
+
+### <a id='9.4.2.5'>9.4.2.5 Uncorrectable Error Mask寄存器变化 (Offset 08h)</a>
+
+除非[表9-34](#tab-9-34)另有说明，[7.8.4.3节](#7.8.3.4)中定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。对于标记为0b的VF字段，该错误不适用VF。
+
+*<a id='tab-9-34'>表9-34 Uncorrectable Error Mask寄存器改变</a>*
+| Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
+| -- | -- | -- | -- |
+| 4 | Data Link Protocol Error Mask | Base | 0b |
+| 5 | Surprise Down Mask | Base | 0b |
+| 12 | Poisoned TLP Received Mask | Base | 保留 |
+| 13 | Flow Control Protocol Error Mask | Base | 0b |
+| 14 | Completion Timeout Mask | Base | 保留 |
+| 15 | Completer Abort Mask | Base | 保留 |
+| 16 | Unexpected Completion Mask | Base | 保留 |
+| 17 | Received Overflow Mask | Base | 0b |
+| 18 | Malformed TLP Mask | Base | 0b |
+| 19 | ECRC Error Mask | Base | 0b |
+| 20 | Unsupported Request Error Mask | Base | 保留 |
+| 21 | ACS Violation Mask | Base | 保留 |
+
+
 ## <a id='9.5'>9.5 SR-IOV Interrupts</a>
 支持SR-IOV的设备使用与[6.1节](#6.1)中定义相同的中断信号机制。
 
