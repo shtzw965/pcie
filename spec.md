@@ -121,6 +121,24 @@ SR-IOV通用平台配置由以下额外功能元件组成：
   - 非VF只能与捕获的Bus编号相关联。
 - 如果支持ARI Extended capability，可以把Function分配到Function Group。分配策略不在本规范内。如果不支持ARI Extended capability，Function仍然可以使用[6.3.3.4节](#6.3.3.4)中定义的Function仲裁功能。
 
+需要注意的关键点：
+
+- IO虚拟化扩展的核心在于此规范。所有IOV实现都必须支持[PCIe-1.1](#PCIe-1.1)或更高版本。IOV规范会在适用情况下注明这些版本之间的相关差异。
+  - 所有IOV规范不涉及物理层。
+  - SR-IOV不涉及本规范中规定的数据链路层或事务层。
+  - [MR-IOV]不涉及本规范中规定的事务层。
+  - 所有IO虚拟化功能均通过PCIe扩展配置空间中实现的新PCI Express capability进行通信。
+  - IO虚拟化规范不影响PCI或PCI-X规范。
+  - 一个层次结构可以由PCIe和PCIe转PCI/PCI-X桥混合组成。
+    - PCIe转PCI/PCI-X桥和PCI/PCI-X设备可被多个SI串行共享。
+- ATS定义了适用于任何Function的可选功能。SR-IOV组件支持ATS。
+- 要实现SR-IOV设备，SR-IOV要求该设备完全符合[PCIe](#PCIe)标准。
+  - 一个层级结构可以由SR-IOV组件和非SR-IOV组件混合组成。例如，一个层级结构可以包含SR-IOV和非SR-IOV EP设备的任意组合。
+
+### <a id='9.1.1'>9.1.1 PCI技术互操作性</a>
+
+明确互操作性要求对于任何技术的成功都至关重要。为此，PCI-SIG IO虚拟化规范旨在最大限度地提高符合规范的实现方案的互操作性潜力。从概念上讲，这可以看作是一组同心圆，它们定义了构建支持IOV的组件需要功能如何分层，如[图 9-9](#pic-9-9)所示。
+
 ### <a id='9.3.2'>9.3.2 Configuration Space</a>
 支持SR-IOV的PF应该按照接下来的章节实现SR-IOV Extended Capability。VF应该按照接下来的章节实现配置空间字段和能力。
 ### <a id='9.3.3'>9.3.3 SR-IOV Extended Capability</a>
