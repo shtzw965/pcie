@@ -142,11 +142,22 @@ SR-IOV通用平台配置由以下额外功能元件组成：
 
 ## <a id='9.2'>9.2 SR-IOV初始化和资源分配</a>
 ### <a id='9.2.1'>9.2.1 SR-IOV资源识别</a>
-下面的章节描述了软件如何判断设备是否具有SR-IOV功能，并随后通过VF配置空间识别VF资源。
+后面的章节描述了软件如何判断设备是否具有SR-IOV功能，并随后通过VF配置空间识别VF资源。
+#### <a id='9.2.1.1'>9.2.1.1 配置SR-IOV capabilities</a>
+本节描述了激活PF的IOV capabilities之前必须配置的字段。只能通过设置PF中SR-IOV Extended capability中的VF Enable位（见[9.3.3.3.1节](#9.3.3.3.1)）启用VF。
+
+NumVFs字段（见[9.3.3.7节](#9.3.3.7)）定义了相关PF中VF Enable置位时启用VF的数量。
+
+#### <a id='9.2.1.1.1'>9.2.1.1.1 VF BAR配置机制</a>
+本节描述了如何配置VF BAR映射内存空间。VF不支持IO空间，因此VF BAR不得指向IO空间。
+
+System Page Size字段（见[9.3.3.13节](#9.3.3.13)）定义了激活PF IOV capabilities时系统映射VF PCIe内存地址所使用的page size。PF用System Page Size把每个VF BAR定义的内存段对齐到系统页边界。System Page Size选择的值必须是SR—IOV Extended capability中Supported Page Size的一个。
+
+VF BAR的行为与普通PCI内存空间BAR的行为相同（见[7.5.1.2.1节](#7.5.1.2.1)），区别在于VF BAR描述每个VF的内存段，而PCI BAR描述单个Function的内存段。如果实现了VF Resizable BAR Extended Capability（见[9.3.7.5节](#9.3.7.5)），则VF BAR中某些位的属性受到影响。
 
 
 
-### <a id='9.3.2'>9.3.2 Configuration Space</a>
+### <a id='9.3.2'>9.3.2 配置空间</a>
 支持SR-IOV的PF应该按照接下来的章节实现SR-IOV Extended Capability。VF应该按照接下来的章节实现配置空间字段和能力。
 ### <a id='9.3.3'>9.3.3 SR-IOV Extended Capability</a>
 ##### <a id='9.3.3.3.5'>9.3.3.3.5 ARI Capable Hierarchy</a>
@@ -240,7 +251,7 @@ Uncorrectable Error Status寄存器表示单个错误的错误检测状态。非
 #### <a id='9.4.2.5'>9.4.2.5 Uncorrectable Error Mask寄存器变动 (Offset 08h)</a>
 除非[表9-34](#tab-9-34)另有说明，[7.8.4.3节](#7.8.3.4)中定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。对于标记为0b的VF字段，该错误不适用VF。
 
-*<a id='tab-9-34'>表9-34 Uncorrectable Error Mask寄存器改变</a>*
+*<a id='tab-9-34'>表9-34 Uncorrectable Error Mask寄存器改动</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
 | -- | -- | -- | -- |
 | 4 | Data Link Protocol Error Mask | Base | 0b |
@@ -259,7 +270,7 @@ Uncorrectable Error Status寄存器表示单个错误的错误检测状态。非
 #### <a id='9.4.2.6'>9.4.2.6 Uncorrectable Error Serverity寄存器变动 (Offset 0Ch)</a>
 除非[表9-35](#tab-9-35)另有说明，[7.8.4.4节](#7.8.4.4)定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。对于标记为0b的VF字段，该错误不适用VF。
 
-*<a id='tab-9-35'>表9-35 Uncorrectable Error Serverity寄存器改变</a>*
+*<a id='tab-9-35'>表9-35 Uncorrectable Error Serverity寄存器变动</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
 | -- | -- | -- | -- |
 | 4 | Data Link Protocol Error Serverity | Base | 0b |
@@ -280,7 +291,7 @@ Correctable Error Status寄存器表示各个Correctable Error的检测状态。
 
 除非[表9-36](#tab-9-36)另有说明，[7.8.4.5节](#7.8.4.5)定义了PF和VF功能。
 
-*<a id='tab-9-36'>表9-36 Correctable Error Status寄存器改变</a>*
+*<a id='tab-9-36'>表9-36 Correctable Error Status寄存器变动</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
 | -- | -- | -- | -- |
 | 0 | Receiced Error Status | Base | 0b |
@@ -293,7 +304,7 @@ Correctable Error Status寄存器表示各个Correctable Error的检测状态。
 #### <a id='9.4.2.8'>9.4.2.8 Correctable Error Mask寄存器变动 (Offset 14h)</a>
 除非[表9-37](#tab-9-37)另有说明，[7.8.4.6节](#7.8.4.6)定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。
 
-*<a id='tab-9-37'>表9-37 Correctable Error Mask寄存器改变</a>*
+*<a id='tab-9-37'>表9-37 Correctable Error Mask寄存器变动</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
 | -- | -- | -- | -- |
 | 0 | Receiced Error Mask | Base | 保留 |
@@ -307,7 +318,7 @@ Correctable Error Status寄存器表示各个Correctable Error的检测状态。
 #### <a id='9.4.2.9'>9.4.2.9 Advanced Error Capabilities and Control寄存器变动 (Offset 18h)</a>
 除非[表9-38](#tab-9-38)另有说明，[7.8.4.7节](#7.8.4.7)定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。
 
-*<a id='tab-9-38'>表9-38 Advanced Error Capabilities and Control寄存器改变</a>*
+*<a id='tab-9-38'>表9-38 Advanced Error Capabilities and Control寄存器变动</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
 | -- | -- | -- | -- |
 | 6 | ECRC Generation Enable | Base | 保留 |
@@ -328,7 +339,7 @@ PF的Header Log寄存器独立于其关联的VF，并且必须实现专用存储
 当VF的First Error Pointer有效时，VF的Header Log条目将被锁定并保持有效。按照[6.2节](#6.2)定义，当Uncorrectable Error Status寄存器相应位置位时，First Error Pointer有效。当Header Log锁定时，其他错误不得覆盖此VF或任何其他VF的已锁定条目。当一个header条目解锁后，共享header log的任何VF应可以记录一个新的错误。
 
 除非[表9-39](#tab-9-39)另有说明，[7.8.4.8节](#7.8.4.8)定义了PF和VF功能。
-*<a id='tab-9-39'>表9-39 Header Log寄存器改变</a>*
+*<a id='tab-9-39'>表9-39 Header Log寄存器变动</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
 | -- | -- | -- | -- |
 | 127:0 | 错误相关TLP的header（上述定义了额外要求） | Base | Base |
