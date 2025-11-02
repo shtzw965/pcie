@@ -1,7 +1,7 @@
 
 # <a id='9'>9 Single Root I/O Virtualization and Sharing</a>
 ## <a id='9.1'>9.1 SR-IOV Architectural Overview</a>
-工业界花费了巨大代价通过使用虚拟化技术提高硬件使用率（如应用执行）。Single Root I/O Virtualization and Sharing (SR-IOV) 让多个System Images（SI）共享PCI硬件资源。
+工业界付出了巨大代价通过使用虚拟化技术提高硬件使用率（如应用执行）。Single Root I/O Virtualization and Sharing (SR-IOV) 让多个System Images（SI）共享PCI硬件资源。
 
 为了展示这项技术如何被用来提高资源使用效率，参考[图9-1](#pic-9-1)所示的通用平台配置。
 
@@ -141,6 +141,12 @@ SR-IOV通用平台配置由以下额外功能元件组成：
 - 要实现SR-IOV设备，SR-IOV要求该设备完全符合[PCIe](#PCIe)标准。
   - 一个层级结构可以由SR-IOV组件和非SR-IOV组件混合组成。例如，一个层级结构可以包含SR-IOV和非SR-IOV EP设备的任意组合。
 
+## <a id='9.2'>9.2 SR-IOV初始化和资源分配</a>
+### <a id='9.2.1'>9.2.1 SR-IOV资源识别</a>
+下面的章节描述了软件如何判断设备是否具有SR-IOV功能，并随后通过VF配置空间识别VF资源。
+
+
+
 ### <a id='9.3.2'>9.3.2 Configuration Space</a>
 支持SR-IOV的PF应该按照接下来的章节实现SR-IOV Extended Capability。VF应该按照接下来的章节实现配置空间字段和能力。
 ### <a id='9.3.3'>9.3.3 SR-IOV Extended Capability</a>
@@ -159,6 +165,67 @@ SR-IOV通用平台配置由以下额外功能元件组成：
 > 连接了上游的设备无法判断是否启用了ARI。如果启用了ARI，设备能够把所捕获的Bus Number中大于7的Function Number分配给VF以节省Bus Number。[6.13节](#6.13)定义了ARI。
 
 由于RCiEP没有连接上游，ARI不适用，可以把RC中First VF Offset和VF Stride允许的任何Function Number分配给VF（见[9.3.3.8节](#9.3.3.8)和[9.3.3.9节](#9.3.3.9)）。
+
+## <a id='9.4'>9.4 SR-IOV错误处理</a>
+SR-IOV设备使用[6.2节](#6.2)定义的错误报告机制。定义为非特定于功能的错误只会记录在PF中。
+
+[6.2节](#6.2)定义了两种错误报告机制：基础capability和AER capability。所有PCIe设备都必须具备基本错误报告功能，这些功能定义了最低错误报告要求。AER capability时可选的，旨在实现更强大的错误报告，并且和特定的PCIe capability结构实现。
+
+### <a id='9.4.1'>9.4.1 基础错误报告</a>
+
+所有SR-IOV设备必须支持基础错误报告功能，并进行了一些修改，以降低成本简化实施流程。
+
+这些控制位只对PF有意义。生成错误消息时，VF应该使用相关PF的错误报告控制位。
+
+下面这些控制位在VF时保留的：
+
+- Command register（见[9.3.4.1.3节](#9.3.4.1.3)）。
+  - SERR# Enable
+  - Parity Error Response
+- Device Control register（见[9.3.5.4节)[#9.3.5.4]）
+  - Correctable Reporting Enable
+  - Non-Fatal Reporting Enable
+  - Fatal Reporting Enable
+  - Unsupported Request Reporting Enable
+
+每个VF都应该实现一个提供独立于其他Function错误状态的机制。提供SI独立性对特定于Function错误是必要的。
+
+每个VF必须实现下面的基础错误报告状态位：
+
+- Status register（见[9.3.4.1.4节](#9.3.4.1.4)）。
+  - Master Data Parity Error
+  - Signaled Target Abort
+  - Received Target Abort
+  - Received Master Abort
+  - Signaled System Error
+  - Detected Parity Error
+- Device Status register（见[9.3.5.5节](#9.3.5.5)）。
+  - Correctable Error Detected
+  - Non-Fatal Error Detected
+  - Fatal Error Detected
+  - Unsupported Request Detected
+
+每个VF发出错误信号应该使用各自的Routing ID。
+
+### <a id='9.4.2'>9.4.2 AER</a>
+
+AER capability是可选的。如果PF中没有实现AER，相关VF也不得实现。如果PF中实现了AER，相关VF可选实现VF。
+
+### <a id='9.4.2.1'>9.4.2.1 VF Header Log</a>
+
+实现AER的VF可以在同一PF相关的VF中共享Header Log寄存器。详见[9.4.2.10节](#9.4.2.10)。
+
+PF的Header Log寄存器独立于其相关的VF，并且必须使用专用存储空间实现。
+
+当采用精简的Header Log寄存器集时，Function可能没有足够的空间记录与错误相关的头部信息。在这种情况下，函数应按照[6.2.4节](#6.2.4)的要求更新Uncorrectable Error Status寄存器和Advanced Error capability与Control寄存器；但是，当读取Header Log寄存器时，应该返回全1表示发生溢出，且没有记录任何头部信息。
+
+### <a id='9.4.2.2'>9.4.2.2 AER capability变化</a>
+
+[图7-122](#pic-7-122)描述了AER Extended capability。
+
+### <a id='9.4.2.3'>9.4.2.3 AER Extended capability头部变化 (Offset 00h)</a>
+
+这些寄存器包含PCIe Extended Capability ID，Capability Version，和Next Capability Offset。这些字段在[7.8.4.1节](#7.8.4.1)描述，没有改变。
 
 ## <a id='9.5'>9.5 SR-IOV Interrupts</a>
 支持SR-IOV的设备使用与[6.1节](#6.1)中定义相同的中断信号机制。
