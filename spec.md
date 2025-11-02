@@ -1,6 +1,6 @@
 
 # <a id='9'>9 Single Root I/O Virtualization and Sharing</a>
-## <a id='9.1'>9.1 SR-IOV Architectural Overview</a>
+## <a id='9.1'>9.1 SR-IOV架构概述</a>
 工业界付出了巨大代价通过使用虚拟化技术提高硬件使用率（如应用执行）。Single Root I/O Virtualization and Sharing (SR-IOV) 让多个System Images（SI）共享PCI硬件资源。
 
 为了展示这项技术如何被用来提高资源使用效率，参考[图9-1](#pic-9-1)所示的通用平台配置。
@@ -222,12 +222,12 @@ PF的Header Log寄存器独立于其相关的VF，并且必须使用专用存储
 #### <a id='9.4.2.3'>9.4.2.3 AER Extended capability头部变化 (Offset 00h)</a>
 这些寄存器包含PCIe Extended Capability ID，Capability Version，和Next Capability Offset。这些字段在[7.8.4.1节](#7.8.4.1)描述，没有改变。
 
-#### <a id='9.4.2.4'>9.4.2.4 Uncorrectable Error Status寄存器变化 (Offset 04h)</a>
+#### <a id='9.4.2.4'>9.4.2.4 Uncorrectable Error Status寄存器变动 (Offset 04h)</a>
 Uncorrectable Error Status寄存器表示单个错误的错误检测状态。非Function特定错误记录在PF中。只有Function特定错误记录在VF中。
 
 除非[表9-33](#tab-9-33)另有说明，[7.8.4.2节](#7.8.4.2)定义了PF和VF功能。
 
-*<a id='tab-9-33'>表9-33 Uncorrectable Error Status寄存器变化</a>*
+*<a id='tab-9-33'>表9-33 Uncorrectable Error Status寄存器变动</a>*
 | Bit Location | PF and VF Register Differences From Base | PF Attributes | VF Attributes |
 | -- | -- | -- | -- |
 | 4 | Data Link Protocol Error Status | Base | 0b |
@@ -237,7 +237,7 @@ Uncorrectable Error Status寄存器表示单个错误的错误检测状态。非
 | 18 | Malformed TLP Status | Base | 0b |
 | 19 | ECRC Error Status | Base | 0b |
 
-#### <a id='9.4.2.5'>9.4.2.5 Uncorrectable Error Mask寄存器变化 (Offset 08h)</a>
+#### <a id='9.4.2.5'>9.4.2.5 Uncorrectable Error Mask寄存器变动 (Offset 08h)</a>
 除非[表9-34](#tab-9-34)另有说明，[7.8.4.3节](#7.8.3.4)中定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。对于标记为0b的VF字段，该错误不适用VF。
 
 *<a id='tab-9-34'>表9-34 Uncorrectable Error Mask寄存器改变</a>*
@@ -256,7 +256,7 @@ Uncorrectable Error Status寄存器表示单个错误的错误检测状态。非
 | 20 | Unsupported Request Error Mask | Base | 保留 |
 | 21 | ACS Violation Mask | Base | 保留 |
 
-#### <a id='9.4.2.6'>9.4.2.6 Uncorrectable Error Serverity寄存器变化 (Offset 0Ch)</a>
+#### <a id='9.4.2.6'>9.4.2.6 Uncorrectable Error Serverity寄存器变动 (Offset 0Ch)</a>
 除非[表9-35](#tab-9-35)另有说明，[7.8.4.4节](#7.8.4.4)定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。对于标记为0b的VF字段，该错误不适用VF。
 
 *<a id='tab-9-35'>表9-35 Uncorrectable Error Serverity寄存器改变</a>*
@@ -275,7 +275,7 @@ Uncorrectable Error Status寄存器表示单个错误的错误检测状态。非
 | 20 | Unsupported Request Error Serverity | Base | 保留 |
 | 21 | ACS Violation Serverity | Base | 保留 |
 
-#### <a id='9.4.2.7'>9.4.2.7 Correctable Error Status寄存器变化 (Offset 10h)</a>
+#### <a id='9.4.2.7'>9.4.2.7 Correctable Error Status寄存器变动 (Offset 10h)</a>
 Correctable Error Status寄存器表示各个Correctable Error的检测状态。非Function特定错误记录在PF中。只有Function特定错误记录在VF中。
 
 除非[表9-36](#tab-9-36)另有说明，[7.8.4.5节](#7.8.4.5)定义了PF和VF功能。
@@ -290,7 +290,7 @@ Correctable Error Status寄存器表示各个Correctable Error的检测状态。
 | 12 | Replay Timer Timeout Status | Base | 0b |
 | 15 | Header Log Overflow Status - 如果VF实现了Header Log共享（见[9.4.2.1节](#9.4.2.1)），本位硬连接0b。 | Base | Base / 0b |
 
-#### <a id='9.4.2.8'>9.4.2.8 Correctable Error Mask寄存器变化 (Offset 14h)</a>
+#### <a id='9.4.2.8'>9.4.2.8 Correctable Error Mask寄存器变动 (Offset 14h)</a>
 除非[表9-37](#tab-9-37)另有说明，[7.8.4.6节](#7.8.4.6)定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。
 
 *<a id='tab-9-37'>表9-37 Correctable Error Mask寄存器改变</a>*
@@ -304,7 +304,7 @@ Correctable Error Status寄存器表示各个Correctable Error的检测状态。
 | 13 | Advisory Non-Fatal Error Mask | Base | 保留 |
 | 15 | Header Log Overflow Mask - 如果VF实现了Header Log共享（见[9.4.2.1节](#9.4.2.1)），本位保留。 | Base | Base / 保留 |
 
-#### <a id='9.4.2.9'>9.4.2.9 Advanced Error Capabilities and Control寄存器变化 (Offset 18h)</a>
+#### <a id='9.4.2.9'>9.4.2.9 Advanced Error Capabilities and Control寄存器变动 (Offset 18h)</a>
 除非[表9-38](#tab-9-38)另有说明，[7.8.4.7节](#7.8.4.7)定义了PF和VF功能。标记为保留的VF字段，PF的设置适用于VF。
 
 *<a id='tab-9-38'>表9-38 Advanced Error Capabilities and Control寄存器改变</a>*
@@ -316,7 +316,7 @@ Correctable Error Status寄存器表示各个Correctable Error的检测状态。
 | 10 | Multiple Header Recording Enable - 如果VF实现了Header Log共享（见[9.4.2.1](#9.4.2.1)），本位保留。 | Base | Base / 保留 |
 | 11 | TLP Prefix Log Present - 如果VF实现了Header Log共享（见[9.4.2.1节](#9.4.2.1)），当Header Log由于溢出而全为一时，本位为0b。 | Base | Base（见描述） |
 
-#### <a id='9.4.2.10'>9.4.2.10 Header Log寄存器变化 (Offset 1Ch)</a>
+#### <a id='9.4.2.10'>9.4.2.10 Header Log寄存器变动 (Offset 1Ch)</a>
 Header Log寄存器捕获与检测到的错误对应的TLP的header。另见[9.4.2.1节](#9.4.2.1)。
 
 VF中实现了AER的设备在同一PF关联的VF之间可以共享Header Log寄存器。共享的Header Log必须至少有一个header的存储空间。
@@ -333,16 +333,16 @@ PF的Header Log寄存器独立于其关联的VF，并且必须实现专用存储
 | -- | -- | -- | -- |
 | 127:0 | 错误相关TLP的header（上述定义了额外要求） | Base | Base |
 
-#### <a id='9.4.2.11'>9.4.2.11 Root Error Command寄存器变化 (Offset 2Ch)</a>
+#### <a id='9.4.2.11'>9.4.2.11 Root Error Command寄存器变动 (Offset 2Ch)</a>
 本寄存器对设备不适用。
 
-#### <a id='9.4.2.12'>9.4.2.12 Root Error Status寄存器变化 (Offset 30h)</a>
+#### <a id='9.4.2.12'>9.4.2.12 Root Error Status寄存器变动 (Offset 30h)</a>
 本寄存器对设备不适用。
 
-#### <a id='9.4.2.13'>9.4.2.13 Error Source Identification寄存器变化 (Offset 34h)</a>
+#### <a id='9.4.2.13'>9.4.2.13 Error Source Identification寄存器变动 (Offset 34h)</a>
 本寄存器对设备不适用。
 
-#### <a id='9.4.2.14'>9.4.2.14 TLP Prefix Log寄存器变化 (Offset 38h)</a>
+#### <a id='9.4.2.14'>9.4.2.14 TLP Prefix Log寄存器变动 (Offset 38h)</a>
 对于PF和VF，如果支持端对端TLP prefix，实现本寄存器。
 
 对于，如果实现了一组Header Log寄存器（[9.4.2.1节](#9.4.2.1)），当Header Log由于溢出而为全一时，本寄存器内容未定义。
