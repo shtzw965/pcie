@@ -89,6 +89,8 @@ SR-IOV通用平台配置由以下额外功能元件组成：
 
 [图9-6](#pic-9-6)展示了另一个使用案例模型。这个案例中，设备支持多个PF有各自一系列VF。
 
+*<a id='pic-9-6'>图9-6 Example SR-IOV Multi-PF Capable Device</a>*
+
 需要注意的关键点：
 
 - 每个PF可以分配零个或多个VF。设备中每个PF的VF不需要相同。
