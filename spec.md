@@ -161,6 +161,48 @@ System Page Size字段（见[9.3.3.13节](#9.3.3.13)）定义了激活PF IOV cap
 
 VF BAR的行为与普通PCI内存空间BAR的行为相同（见[7.5.1.2.1节](#7.5.1.2.1)），区别在于VF BAR描述每个VF的内存段，而PCI BAR描述单个Function的内存段。如果实现了VF Resizable BAR Extended Capability（见[9.3.7.5节](#9.3.7.5)），则VF BAR中某些位的属性受到影响。
 
+- [7.5.1.2.1节](#7.5.1.2.1)中描述的确定Function BAR内存范围的行为适用于所有VF。就是说，每个VF BAR所需的内存大小可以通过写入全一然后读取VF BAR来确定。读取的结果必须按照[7.5.1.2.1节](#7.5.1.2.1)中的描述进行解释。
+- [7.5.1.2.1节](#7.5.1.2.1)也描述了第一个VF相关的每个BAR的起始内存地址的分配行为。就是说，设备使用写入每个VF BAR的地址作为第一个VF的起始地址。
+- VF BAR和[7.5.1.2.1节](#7.5.1.2.1)中描述的BAR的区别在于第二个VF以及更高的VF由第一个VF的起始地址和存储空间尺寸导出。任何给定VFv的内存空间的任何已实现BARb根据下面的公式计算：
+
+  BARb VFv起始地址 = VF BARb + (v - 1) x (VF BARb aperture size)
+
+  其中VF BARb aperture size是VF BARb的大小，由[9.3.3.14节](#9.3.3.14)中描述的常规BAR探测算法确定。
+
+  只有VF Enable和VF MSE同时置位，VF内存空间才会启用（见[9.3.3.3.1](#9.3.3.3.1)节和[9.3.3.3.4节](#9.3.3.3.4)）。注意System Page Size（见[9.3.3.13节](#9.3.3.13)）的改变会影响VF BAR aperture size。
+
+[图9-10](#pic-9-10)展示了一个PF和VF内存空间aperture例子。
+
+*<a id='pic-9-10'>图9-10 单BAR设备的BAR空间示例</a>*
+
+#### <a id='9.2.1.2'>VF识别</a>
+
+SR-IOV Extended capability中First VF Offset和VF Stride字段是16位Routing ID偏移量。用这些偏移量计算VF的Routing ID受下面的限制：
+
+- PF中NumVFs的值（[9.3.3.7节](#9.3.3.7)）影响该PF中First VF Offset（[9.3.3.9节](#9.3.3.9)）和VF Stride（[9.3.3.10节](#9.3.3.10)）的值。
+- 最小编号PF中ARI Capable Hierarchy（[9.3.3.3.5节](#9.3.3.3.5)）的值影响所有设备中PF的First VF Offset和VF Stride的值。
+- 当PF的VF Enable清除时，该PF的NumVFs（[9.3.3.3.1节](#9.3.3.3.1)）可能改变。
+- 只有设备中所有PF的VF Enable清除时，ARI Capable Hierarchy（[9.3.3.3.5节](#9.3.3.3.5)）才能改变。
+
+> [!NOTE]
+> NumVFs and ARI Capable Hierarchy
+>
+> 适当配置NumVFs和ARI Capable Hierarchy后，软件可能读取First VF Offset和VF Stride决定PF的VF占用多少个Bus编号。任何额外的Bus编号直到VF Enable置位才被实际使用。
+
+[表9-1](#tab-9-1)描述了用于决定每个VF相关Routing ID的算法。
+
+*<a id='tab-9-1'>表9-1 VF Routing ID算法</a>*
+
+| VF Number | VF Routing ID |
+| -- | -- |
+| VF 1 | (PF Routing ID + First VF Offset) Modulo 2^16 |
+| VF 2 | (PF Routing ID + First VF Offset + VF Stride) Modulo 2^16 |
+| VF 3 | (PF Routing ID + First VF Offset + 2 * VF Stride) Modulo 2^16 |
+| ... | ... |
+| VF N | (PF Routing ID + First VF Offset + (N-1) * VF Stride) Modulo 2^16 |
+| ... | ... |
+| VF NumVFs (last one) | (PF Routing ID + First VF Offset + (NumVFs-1) * VF Stride) Modulo 2^16 |
+
 
 
 ### <a id='9.3.2'>9.3.2 配置空间</a>
