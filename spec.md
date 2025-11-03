@@ -175,7 +175,7 @@ VF BAR的行为与普通PCI内存空间BAR的行为相同（见[7.5.1.2.1节](#7
 
 *<a id='pic-9-10'>图9-10 单BAR设备的BAR空间示例</a>*
 
-#### <a id='9.2.1.2'>VF识别</a>
+#### <a id='9.2.1.2'>9.2.1.2 VF识别</a>
 
 SR-IOV Extended capability中First VF Offset和VF Stride字段是16位Routing ID偏移量。用这些偏移量计算VF的Routing ID受下面的限制：
 
