@@ -204,7 +204,11 @@ SR-IOV Extended capability中First VF Offset和VF Stride字段是16位Routing ID
 | VF NumVFs (last one) | (PF Routing ID + First VF Offset + (NumVFs-1) * VF Stride) Modulo 2^16 |
 
 
+## <a id='9.3'>9.3 配置</a>
+### <a id='9.3.1'>9.3.1 SR-IOV配置概述</a>
+本节提供了PF和VF实现SR-IOV的额外要求。
 
+PF和其他Function一起在配置空间是可识别的。PF包含[9.3.3节](#9.3.3)描述的SR-IOV Extended Capability。PF用于识别、配置和管理该PF相关的VF和本规范描述的事项。
 ### <a id='9.3.2'>9.3.2 配置空间</a>
 支持SR-IOV的PF应该按照接下来的章节实现SR-IOV Extended Capability。VF应该按照接下来的章节实现配置空间字段和能力。
 ### <a id='9.3.3'>9.3.3 SR-IOV Extended Capability</a>
