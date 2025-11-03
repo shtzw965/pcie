@@ -185,7 +185,7 @@ SR-IOV Extended capability中First VF Offset和VF Stride字段是16位Routing ID
 - 只有设备中所有PF的VF Enable清除时，ARI Capable Hierarchy（[9.3.3.3.5节](#9.3.3.3.5)）才能改变。
 
 > [!NOTE]
-> NumVFs and ARI Capable Hierarchy
+> **NumVFs and ARI Capable Hierarchy**
 >
 > 适当配置NumVFs和ARI Capable Hierarchy后，软件可能读取First VF Offset和VF Stride决定PF的VF占用多少个Bus编号。任何额外的Bus编号直到VF Enable置位才被实际使用。
 
