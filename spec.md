@@ -194,13 +194,13 @@ SR-IOV Extended capability中First VF Offset和VF Stride字段是16位Routing ID
 
 | VF Number | VF Routing ID |
 | -- | -- |
-| VF 1 | (PF Routing ID + First VF Offset) Modulo 2^16 |
-| VF 2 | (PF Routing ID + First VF Offset + VF Stride) Modulo 2^16 |
-| VF 3 | (PF Routing ID + First VF Offset + 2 * VF Stride) Modulo 2^16 |
+| VF 1 | (PF Routing ID + First VF Offset) Modulo 2<sup>16</sup> |
+| VF 2 | (PF Routing ID + First VF Offset + VF Stride) Modulo 2<sup>16</sup> |
+| VF 3 | (PF Routing ID + First VF Offset + 2 * VF Stride) Modulo 2<sup>16</sup> |
 | ... | ... |
-| VF N | (PF Routing ID + First VF Offset + (N-1) * VF Stride) Modulo 2^16 |
+| VF N | (PF Routing ID + First VF Offset + (N-1) * VF Stride) Modulo 2<sup>16</sup> |
 | ... | ... |
-| VF NumVFs (last one) | (PF Routing ID + First VF Offset + (NumVFs-1) * VF Stride) Modulo 2^16 |
+| VF NumVFs (last one) | (PF Routing ID + First VF Offset + (NumVFs-1) * VF Stride) Modulo 2<sup>16</sup> |
 
 此Routing ID计算中使用的所有算术运算均为16位无符号运算舍弃所有进位。
 
