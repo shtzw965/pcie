@@ -176,7 +176,6 @@ VF BAR的行为与普通PCI内存空间BAR的行为相同（见[7.5.1.2.1节](#7
 *<a id='pic-9-10'>图9-10 单BAR设备的BAR空间示例</a>*
 
 #### <a id='9.2.1.2'>9.2.1.2 VF识别</a>
-
 SR-IOV Extended capability中First VF Offset和VF Stride字段是16位Routing ID偏移量。用这些偏移量计算VF的Routing ID受下面的限制：
 
 - PF中NumVFs的值（[9.3.3.7节](#9.3.3.7)）影响该PF中First VF Offset（[9.3.3.9节](#9.3.3.9)）和VF Stride（[9.3.3.10节](#9.3.3.10)）的值。
@@ -244,7 +243,6 @@ SW处理Bus编号和基本PCIe一致。基本PCIe中，SW向设备发送所有�
 > SR-IOV设备可能占据多个Bus编号。除第一个外的额外Bus编号紧随分配给设备的第一个Bus编号后。如果SR-IOV也包含PCI-PCI桥（带有Type 1配置空间头），在为这些桥设置Secondary Bus Number时，必须考虑SR-IOV的使用情况。软件应该首先决定VF使用的最后Bus编号然后配置任何同位置的桥使用该值之上的Bus编号。
 
 #### <a id='9.2.1.3'>9.2.1.3 Function Dependency Lists</a>
-
 PCI设备可以有厂商特定Function依赖关系。例如，Function 0和1可能提供控制同一底层硬件的不同架构。这种情况下，设备编程模型可能需要这些有依赖的Function作为一个组分配给SI。
 
 Function Dependency Lists用于描述依赖关系（或表明没有Function依赖关系）。软件应该把这些PF和VF分配给SI，以满足依赖关系。
@@ -252,7 +250,6 @@ Function Dependency Lists用于描述依赖关系（或表明没有Function依�
 详见[9.3.3.8节](#9.3.3.8)。
 
 #### <a id='9.2.1.4'>9.2.1.4 中断资源分配</a>
-
 如果分配了中断资源，PF和VF支持MSI或/和MSI-X中断。VF不应实现INTx。[9.5节](#9.5)描述了中断。
 
 ### <a id='9.2.2'>9.2.2 SR-IOV复位架构</a>
@@ -264,20 +261,79 @@ Function Dependency Lists用于描述依赖关系（或表明没有Function依�
 注意：常规复位会清除PF的VF Enable。因此，常规复位后VF不再存在。
 
 #### <a id='9.2.2.2'>9.2.2.2 针对VF的FLR</a>
-
 VF必须支持FLR。
 
 注意：软件可以使用FLR复位VF。对一个VF的FLR应该VF的状态但不影响其在PCI配置空间和地址空间的存在。针对VF的FLR不影响PF SR-IOV Extended capability中的VFs BARn的值（见[9.3.3.14节](#9.3.3.14)）和VF Resizable BAR capability的值（见[9.3.7.5节](#9.3.7.5)）。
 
 #### <a id='9.2.2.3'>9.2.2.3 针对PF的FLR</a>
-
 PF必须支持FLR。
 
 对一个PF的FLR复位PF状态，也复位包括VF Enable的SR-IOV Extended capability，这意味着VF不再存在。
 
 ### <a id='9.2.3'>9.2.3 IOV重新初始化和重新分配</a>
-
 如果VF Enable置位后清除，PF相关的VF不再存在，并且不得再发送PCIe trans或响应配置空间或内存空间的访问。VF Enable清除后VF不得保留任何状态（包括黏滞位）。
+
+### <a id='9.2.4'>9.2.4 VF Migration</a>
+VF迁移是[MR-IOV]的可选功能。不支持**MR-IOV Extended Capability**的设备不支持VF迁移的功能。
+
+在多Root系统，VF可以在Virtual Hierarchies之间迁移。
+
+要进行VF迁移，必须同时置位VF Migration Capable和VF Migration Enable。VF Migration Capable向SR-PCIM指示存在VF迁移硬件，并且MR-PCIM已经启用它。硬件对VF Migration的支持是可选的。VF Migration对SR-PCIM支持也是可选的。
+
+VF Migration Enable向设备硬件和MR-PCIM表明SR-PCIM也启用了VF Migration。
+
+支持VF Migration对SR-PCIM有下面的要求：
+
+- 需要决定VF处于*Active*，*Dormant*或*Inactive*。VF处于Active是指可以被SR使用。VF处于Dormant是指可以被SR配置但不能发送trans。VF处于Unactive是指不可被SR使用。
+- 需要***Migrate In***操作的参与。用一个Migrate In操作向SR提供一个VF。MR-PCIM发起Migrate In操作。SR-PCIM可以接收Migrate In操作并且把一个VF置于Active.Available状态。
+- 需要***Migrate Out***操作的参与。用一个Migrate Out操作请求SR优雅移除一个Active状态的VF。SR-PCIM可以接收Migrate Out并把VF置于Inactive.Unavailable状态。
+- 需要处理***Migrate In Retractions***。这是指MR-PCIM撤回向SR提供​​的VF，并且VF恢复到Inactive.Unavailable状态。
+
+#### <a id='9.2.4.1'>9.2.4.1 Initial VF State</a>
+本节描述VF Migration State Array中的初始值（见[9.3.3.15.1节](#9.3.3.15.1)）。
+
+如果InitialVFs（[9.3.3.5](#9.3.3.5)）为非零，VF<sub>1</sub>到VF<sub>InitialVFs</sub>处于Active.Available状态。如果TotalVFs（[9.3.3.6节](#9.3.3.6)）大于InitialVFs，VF<sub>InitailVFs+1</sub>到VF<sub>TotalVFs</sub>处于Inactive.Unavailable状态。如果清除VF Migration Enable（[9.3.3.3.2](#9.3.3.3.2)），InitialVFs之上的VF未被使用。
+
+如果InitialVFs为0，所有VF不处于Active.Available状态。如果TotalVFs等于InitialVFs，所有VF处于Active.Available状态。如果TotalVFs为0，则该PF没有关联的VF，并且没有VF Migration Array。
+
+[图9-11](#9-11)描述了这种初始VF状态。
+
+*<a id='pic-9-11'>图9-11 Initial VF Migration State Array</a>*
+
+#### <a id='9.2.4.2'>9.2.4.2 VF Migration State转换</a>
+VF迁移遵守[图9-12](#pic-9-12)中的状态机。所示状态值位于VF所关联的VF State数组条目中。实线表示的状态转换由MR-PCIM发起。虚线和点划线表示的状态转换由SR-PCIM发起。
+
+*<a id='pic-9-12'>图9-12 VF Migration State状态机</a>*
+
+SR-PCIM通过向VF Migration State Array写入一个新值发起一个状态转换。当SR-PCIM尝试发起[表9-2](#tab-9-2)以外的任何状态转换时，设备忽略写入转换，不会发生状态转换。
+
+*<a id='tab-9-2'>表9-2 SR-IOV VF Migration State表</a>*
+
+| 当前VF Enable | 当前VF State | 写入的VF Enable | 写入的VF State | 含义 |
+| -- | -- | -- | -- | -- |
+| 1 | Dormant.MigrateIn | 1 | Active.Available | SR Activate VF |
+| 1 | Active.Available | 1 | Dormant.MigrateIn | SR Disactivate VF |
+| 1 | Active.MigrateOut | 1 | Inactive.Unavailable | SR完成Migrate Out |
+| 1 | Any | 0 | Any | SR Disable所有VF |
+| 0 | Any | 1 | Any | SR Enable所有VF - 根据VF编号和InitialVFs的值，VF转换到Active.Available或Inactive.Unavailable状态。 |
+
+> [!NOTE]
+> **Software State Migration Change Detection**
+>
+> SR-PCIM通常需要在写入VF Migration State后重新读取该状态，以验证状态更改是否生效。
+
+处于Inactive.Unavailable状态的VF任何方式都对软件不可用。针对一个Inactive的VF的请求会收到UR。设备进入Inactive或Dormant状态后的100毫秒内，必须确保不会使用指定的Routing ID发出任何新trans。
+
+MR-PCIM通过使用[MR-IOV]中特定不同的数据结构发起状态转换。这些转换的影响在VF Migration State Array和VF Migration Bit中可见。MR-PCIM发起的所有状态转换会导致VF Migration Status置位。
+
+这个migration状态机在每个支持VF Migration的VF中存在。Migration状态机不受Function Dependency Lists（见[9.2.1.3节](#9.2.1.3)和[9.3.3.8节](#9.3.3.8)）影响。
+
+VF Migrate State不影响Function状态。如果VF状态需要作为Migreate Out和/或Migrate In操作的一部分复位，SR-PCIM必须发起FLR来完成。未复位但VF Migration发生时VF行为未定义。
+
+> [!NOTE]
+> **FLR and VF Migration**
+>
+> 系统A到系统B的VF Migration通常涉及系统A执行MigrateOut操作之前的一次FLR和系统B中执行MigrateIn操作之后使用VF之前执行的第二次FLR。系统A使用第一次FLR来确保其数据不会泄露。系统B使用第二次FLR来确保其从干净状态开始。
 
 ## <a id='9.3'>9.3 配置</a>
 ### <a id='9.3.1'>9.3.1 SR-IOV配置概述</a>
