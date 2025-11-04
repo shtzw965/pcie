@@ -203,6 +203,81 @@ SR-IOV Extended capability中First VF Offset和VF Stride字段是16位Routing ID
 | ... | ... |
 | VF NumVFs (last one) | (PF Routing ID + First VF Offset + (NumVFs-1) * VF Stride) Modulo 2^16 |
 
+此Routing ID计算中使用的所有算术运算均为16位无符号运算舍弃所有进位。
+
+所有VF和PF必须具有明确的Routing ID。在设备任何设置了有效的NumVFs的PF中，任何PF或VF的Routing ID都不得与其他任何PF或VF的Routing ID 重叠。
+
+VF Stride和First VF Offset是常数。除非本节前述已明确，其值不应被设备中本Function或其他Function中的设置影响。
+
+VF可能位于关联PF不同的Bus编号上。例如，当First VF Offset为0100h时，就会出现这种情况。VF的Bus编号不得小于其关联的PF。如果VF与关联的PF位于同一Bus编号上，则其Device编号不得小于该PF。（注：DS正下方的SR-IOV设备的Device编号始终为0，因此始终满足此条件。）
+
+SR-IOV RCiEP设备的VF与RC Event Collector（如果存在）关联作为其PF。这些VF不会再RC Event Collector的Root Complex Event Collector Endpoint Association Extended Capability中报告。
+
+正如前面的[2.2.6.2节](#2.2.6.2)，具有SR-IOV能力且与US关联的设备从任何Type 0配置写入请求中捕获Bus编号。SR-IOV能力的设备不会从任何Type 1配置写入请求中捕获Bus编号。SR-IOV能力的RCiEP使用根据实现的架构分配他们的Bus编号。
+
+SW处理Bus编号和基本PCIe一致。基本PCIe中，SW向设备发送所有从Secondary Bus Number（包含）到Subordinate Bus Number（包含）的配置请求。针对Secondary Bus Number的Type 1配置请求被转化为Type 0配置请求，而针对从Secondary Bus Number（不包含）到Subordinate Bus Number（包含）的Bus编号的Type 1配置请求作为Type 1配置请求转发到设备。
+
+注意：Bus编号是受限资源。强烈建议设备使用Bus编号避免留有空洞，以避免浪费Bus编号。
+
+所有PF必须位于设备捕获的Bus编号。
+
+> [!NOTE]
+> **VFs Spanning Multiple Bus Numbers**
+>
+> 作为案例，考虑一个仅有一个PF的SR-IOV设备。起初，只有PF 0是可见的。软件置位ARI Capable Hierarchy。根据SR-IOV Extended Capabilty，设备决定：InitialVFs是600，First VF Offset是1，VF Stride是1。
+> 
+> - 如果软件设置NumVFs的值在\[0...255\]范围，那么设备只使用一个Bus编号。
+> - 如果软件设置NumVFs的值在\[256...511\]范围，那么设备使用两个Bus编号。
+> - 如果软件设置NumVFs的值在\[512...600\]范围，那么设备使用三个Bus编号。
+>
+> PF 0和VF 0,1至VF 0,255总在捕获的第一个Bus编号。VF 0,256到VF 0,511总在第二个Bus编号（捕获的Bus编号加1）。VF 0,512到VF 0,600总在第三个Bus编号（捕获Bus编号加2）。
+
+软件应该配置SW的Secondary和Subordinate Bus Number字段以便为设备分配足够的Bus编号。如果没有足够的Bus数量，软件应通过不启用SR-IOV或启用SR-IOV之前减少设备的部分或全部PF的 NumVF来降低设备的Bus编号要求。
+
+在某些PF n置位VF Enable后，设备必须启用VF n,1到VF n,m（含），其中m是InitialVFs和NumVFs中的更小值。接收到针对位于捕获Bus编号上的已启用VF的Type 0配置请求的设备必须正常处理该请求。接收到针对未位于捕获Bus编号上的已启用VF的Type 1配置请求的设备必须正常处理该请求。接收到针对设备自身捕获Bus编号的Type 1配置请求的设备必须遵循处理不受支持请求的规则。此外，如果置位了VF MSE，则每个已启用的VF都必须响应针对其关联内存空间的PCIe内存trans。
+
+没有激活的Function在PCIe fabric中不存在。正如前述[2.3.1节](#2.3.1)，针对不存在的Function会导致返回UR。这包含那些额外Bus编号上面的Function。
+
+> [!NOTE]
+> **Multi-Function Devices with PFs and Switch Functions**
+>
+> SR-IOV设备可能占据多个Bus编号。除第一个外的额外Bus编号紧随分配给设备的第一个Bus编号后。如果SR-IOV也包含PCI-PCI桥（带有Type 1配置空间头），在为这些桥设置Secondary Bus Number时，必须考虑SR-IOV的使用情况。软件应该首先决定VF使用的最后Bus编号然后配置任何同位置的桥使用该值之上的Bus编号。
+
+#### <a id='9.2.1.3'>9.2.1.3 Function Dependency Lists</a>
+
+PCI设备可以有厂商特定Function依赖关系。例如，Function 0和1可能提供控制同一底层硬件的不同架构。这种情况下，设备编程模型可能需要这些有依赖的Function作为一个组分配给SI。
+
+Function Dependency Lists用于描述依赖关系（或表明没有Function依赖关系）。软件应该把这些PF和VF分配给SI，以满足依赖关系。
+
+详见[9.3.3.8节](#9.3.3.8)。
+
+#### <a id='9.2.1.4'>9.2.1.4 中断资源分配</a>
+
+如果分配了中断资源，PF和VF支持MSI或/和MSI-X中断。VF不应实现INTx。[9.5节](#9.5)描述了中断。
+
+### <a id='9.2.2'>9.2.2 SR-IOV复位架构</a>
+本节描述了PCI定义的基本复位如何影响SR-IOV能力的设备，也描述了复位单个VF或单个PF关联的所有VF的架构。
+
+#### <a id='9.2.2.1'>9.2.2.1 SR-IOV常规复位</a>
+对支持SR-IOV的设备常规复位应该导致所有Function（包括PF和VF）复位至初始状态，power-on状态应该按照前述[6.6.1节](#6.6.1)的规则。[9.3节](#9.3)描述了定义字段的行为。
+
+注意：常规复位会清除PF的VF Enable。因此，常规复位后VF不再存在。
+
+#### <a id='9.2.2.2'>9.2.2.2 针对VF的FLR</a>
+
+VF必须支持FLR。
+
+注意：软件可以使用FLR复位VF。对一个VF的FLR应该VF的状态但不影响其在PCI配置空间和地址空间的存在。针对VF的FLR不影响PF SR-IOV Extended capability中的VFs BARn的值（见[9.3.3.14节](#9.3.3.14)）和VF Resizable BAR capability的值（见[9.3.7.5节](#9.3.7.5)）。
+
+#### <a id='9.2.2.3'>9.2.2.3 针对PF的FLR</a>
+
+PF必须支持FLR。
+
+对一个PF的FLR复位PF状态，也复位包括VF Enable的SR-IOV Extended capability，这意味着VF不再存在。
+
+### <a id='9.2.3'>9.2.3 IOV重新初始化和重新分配</a>
+
+如果VF Enable置位后清除，PF相关的VF不再存在，并且不得再发送PCIe trans或响应配置空间或内存空间的访问。VF Enable清除后VF不得保留任何状态（包括黏滞位）。
 
 ## <a id='9.3'>9.3 配置</a>
 ### <a id='9.3.1'>9.3.1 SR-IOV配置概述</a>
