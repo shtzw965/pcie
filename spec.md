@@ -348,7 +348,7 @@ PF和其他Function一起在配置空间是可识别的。PF包含[9.3.3节](#9.
 
 该位只出现在设备编号最小的PF（如PF0）中，并且影响设备所有的PF。设备其他PF中的该位只读为0。
 
-设备可能根据该位的设置决定Fisrt VF Offset（见[9.3.3.9节](#9.3.3.9)）和VF Stride（见[9.3.3.10节](#9.3.3.10)）的值。在任何PF的VF Eanble置位时改变该位的后果未定义。常规复位后该位必须设为默认值。任何PF和VF的FLR不影响该位的值。如果ARI Capable Hierarchy Preserved（见[9.3.3.2.2节](#9.3.3.2.2)）或No_Soft_Reset（见[9.6.2节](#9.6.2)）置位，所属PF从D3Hot到D0的电源状态改变不影响该位的值（见[9.6.2节](#9.6.2)）。
+设备可能根据该位的设置决定Fisrt VF Offset（见[9.3.3.9节](#9.3.3.9)）和VF Stride（见[9.3.3.10节](#9.3.3.10)）的值。在任何PF的VF Eanble置位时改变该位的后果未定义。常规复位后该位必须设为默认值。任何PF和VF的FLR不影响该位的值。如果ARI Capable Hierarchy Preserved（见[9.3.3.2.2节](#9.3.3.2.2)）或No_Soft_Reset（见[9.6.2节](#9.6.2)）置位，所属PF从D3<sub>Hot</sub>到D0的电源状态改变不影响该位的值（见[9.6.2节](#9.6.2)）。
 
 该位对RCiEP不适用。
 
@@ -584,7 +584,7 @@ PF需要[第5章](#5)描述的Power Management Capability 。
 
 如果VF实现了Power Management Capability，PF的电源状态低于VF时，设备行为未定义。软件应该先将VF置于更低电源状态，再降低它们所属PF的电源状态，以避免这种情况。
 
-当VF完成内部初始化，且VF的Bus Master Enable（见[9.3.4.1.3节](#9.3.4.1.3)）或SR-IOV Capability的VF MSE位（见[9.3.3.3节](#9.3.3.3)）置位时，处于D0状态的VF即处于D0active。VF的内部初始化必须在满足以下任一条件时完成：
+当VF完成内部初始化，且VF的Bus Master Enable（见[9.3.4.1.3节](#9.3.4.1.3)）或SR-IOV Capability的VF MSE位（见[9.3.3.3节](#9.3.3.3)）置位时，处于D0状态的VF即处于D0<sub>active</sub>。VF的内部初始化必须在满足以下任一条件时完成：
 
 - VF已经成功响应一个cfg请求（返回CRS除外）。
 - 向VF发出FLR之后，符合以下条件之一：
@@ -594,23 +594,23 @@ PF需要[第5章](#5)描述的Power Management Capability 。
 - 在设置一个PF的VF Enable后，符合以下条件之一：
   - VF Enable置位后至少1.0s。
   - PF支持FRS，且在VF Enable置位后，收到一条Reason Code为VF Enabled的FRS消息。
-- 在VF从D3Hot到D0转换后，符合以下条件之一：
+- 在VF从D3<sub>Hot</sub>到D0转换后，符合以下条件之一：
   - 进入D0的请求发出过后10ms。
-  - VF支持FRS，并且发出进入D0的请求后，收到一条Reason Code为D3Hot to D0 Transition Completed的FRS消息。
-  - 发出进入D0的请求后，至少过去D3Hot to D0 Time的时间。D3Hot to D0 Time的时间为VF相关Readiness Time Reporting capability中的D3Hot to D0 Time或由系统软件/固件决定的值。
+  - VF支持FRS，并且发出进入D0的请求后，收到一条Reason Code为D3<sub>Hot</sub> to D0 Transition Completed的FRS消息。
+  - 发出进入D0的请求后，至少过去D3<sub>Hot</sub> to D0 Time的时间。D3<sub>Hot</sub> to D0 Time的时间为VF相关Readiness Time Reporting capability中的D3<sub>Hot</sub> to D0 Time或由系统软件/固件决定的值。
 ### <a id='9.6.2'>9.6.2 PF Device Power Management States</a>
 PF的电源管理状态（D-state）对其关联的VF具有全局影响。如果VF未实现Power Management Capability，则其行为如同处于其关联的PF相同的电源状态。
 
 如果VF实现了Power Management Capability，PF的电源状态低于VF时，设备行为未定义。软件应该先将VF置于更低电源状态，再降低它们所属PF的电源状态，以避免这种情况。
 
-当PF置于D3Hot时：
+当PF置于D3<sub>Hot</sub>时：
 
-- 如果No_Soft_Reset位为0，PF在D3Hot到D0转换时执行内部复位，其所有配置状态恢复为默认值。
+- 如果No_Soft_Reset位为0，PF在D3<sub>Hot</sub>到D0转换时执行内部复位，其所有配置状态恢复为默认值。
 
-注意：重置PF会重置VF Enable，这意味着VF不再存在，并且在D3Hot到D0转换完成后，所有VF的特定上下文都会丢失。
+注意：重置PF会重置VF Enable，这意味着VF不再存在，并且在D3<sub>Hot</sub>到D0转换完成后，所有VF的特定上下文都会丢失。
 - 如果No_Soft_Reset位置位，内部复位不会发生。SR-IOV extended capability保持状态切相关的VF仍然启用。
 
-当PF进入D3Cold状态时，VF不再存在，所有VF的特定上下文都会丢失，PME事件只能由PF发起。
+当PF进入D3<sub>Cold</sub>状态时，VF不再存在，所有VF的特定上下文都会丢失，PME事件只能由PF发起。
 
 > [!NOTE]
 > **No_Soft_Reset Strongly Recommended**
