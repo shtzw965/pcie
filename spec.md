@@ -374,7 +374,7 @@ SR-IOV设备使用[6.2节](#6.2)定义的错误报告机制。定义为非特定
 - Command register（见[9.3.4.1.3节](#9.3.4.1.3)）。
   - SERR# Enable
   - Parity Error Response
-- Device Control register（见[9.3.5.4节)[#9.3.5.4]）
+- Device Control register（见[9.3.5.4节](#9.3.5.4)）
   - Correctable Reporting Enable
   - Non-Fatal Reporting Enable
   - Fatal Reporting Enable
